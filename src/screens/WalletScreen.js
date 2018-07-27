@@ -1,3 +1,4 @@
+import { accountUpdateAccountAddress as accountUpdateAccountAddressActionCreactor } from 'balance-common';
 import { get } from 'lodash';
 import PropTypes from 'prop-types';
 import React from 'react';
@@ -34,6 +35,7 @@ const sortAssetsByNativeAmount = (assets, showShitcoins) => {
 
 const WalletScreen = ({
   accountInfo,
+  accountUpdateAccountAddress,
   onPressProfile,
   onToggleShowShitcoins,
   showShitcoins,
@@ -71,6 +73,15 @@ const WalletScreen = ({
         </HeaderButton>
       </Header>
       <AssetList
+        fetchData={() => {
+          // note: every time this is called it sets a new interval. this is a memory leak.
+          accountUpdateAccountAddress(accountInfo.address, 'BALANCEWALLET');
+          return new Promise((resolve) => {
+            // hack: use timeout so that it looks like loading is happening
+            // accountUpdateAccountAddress does not return a promise
+            setTimeout(resolve, 2000);
+          });
+        }}
         sections={filterEmptyAssetSections([sections.balances, sections.collectibles])}
         showShitcoins={showShitcoins}
       />
@@ -80,6 +91,7 @@ const WalletScreen = ({
 
 WalletScreen.propTypes = {
   accountInfo: PropTypes.object.isRequired,
+  accountUpdateAccountAddress: PropTypes.func.isRequired,
   fetching: PropTypes.bool.isRequired,
   fetchingUniqueTokens: PropTypes.bool.isRequired,
   onPressProfile: PropTypes.func.isRequired,
@@ -98,7 +110,7 @@ const reduxProps = ({ account }) => ({
 export default compose(
   withHideSplashScreenOnMount,
   withState('showShitcoins', 'toggleShowShitcoins', true),
-  connect(reduxProps, null),
+  connect(reduxProps, { accountUpdateAccountAddress: accountUpdateAccountAddressActionCreactor }),
   withHandlers({
     onPressProfile: ({ navigation }) => () => navigation.navigate('SettingsScreen'),
     onToggleShowShitcoins: ({ showShitcoins, toggleShowShitcoins }) => () => toggleShowShitcoins(!showShitcoins),

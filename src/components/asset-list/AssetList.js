@@ -1,12 +1,12 @@
 import { get } from 'lodash';
 import PropTypes from 'prop-types';
 import React from 'react';
-import { SectionList } from 'react-native';
 import { compose, withProps } from 'recompact';
 import styled from 'styled-components/primitives';
 import { withSafeAreaViewInsetValues } from '../../hoc';
 import { position } from '../../styles';
 import { FabWrapper, FloatingActionButton, WalletConnectFab } from '../fab';
+import RefreshableList from '../RefreshableList';
 import AssetListHeader from './AssetListHeader';
 import AssetListItem from './AssetListItem';
 import AssetListFooter from './AssetListFooter';
@@ -16,7 +16,7 @@ const Container = styled.View`
   flex: 1;
 `;
 
-const List = styled(SectionList)`
+const List = styled(RefreshableList)`
   ${position.size('100%')}
 `;
 
@@ -35,6 +35,7 @@ const keyExtractor = (item, index) => {
 };
 
 const AssetList = ({
+  fetchData,
   isEmpty,
   safeAreaInset,
   sections,
@@ -47,6 +48,7 @@ const AssetList = ({
       ) : (
         <List
           contentContainerStyle={buildContentContainerStyle(safeAreaInset)}
+          fetchData={fetchData}
           keyExtractor={keyExtractor}
           renderItem={AssetListItem}
           renderSectionFooter={AssetListFooter}
@@ -59,6 +61,7 @@ const AssetList = ({
 );
 
 AssetList.propTypes = {
+  fetchData: PropTypes.func.isRequired,
   isEmpty: PropTypes.bool,
   safeAreaInset: PropTypes.object,
   sections: PropTypes.arrayOf(PropTypes.object),
